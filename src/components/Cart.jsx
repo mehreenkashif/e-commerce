@@ -59,15 +59,7 @@ const CartTotal = ({ totalPrice, items }) => (
           ${totalPrice.toFixed(2)}
         </Typography>
       </Typography>
-      <Button 
-        variant="contained" 
-        size="large" 
-        fullWidth
-        sx={{ mt: 2 }}
-        disabled={items.length === 0}
-      >
-        Proceed to Checkout
-      </Button>
+      
     </Paper>
   </Box>
 );
