@@ -1,22 +1,5 @@
-// import React from 'react';
-// import { AppBar, Toolbar, Typography } from '@mui/material';
-// import { useNavigate } from 'react-router-dom';
+import React from 'react';
 
-// const Header = () => {
-//   const navigate = useNavigate();
-
-//   return (
-//     <AppBar position="static">
-//       <Toolbar>
-//         <Typography variant="h6" onClick={() => navigate('/')} sx={{ cursor: 'pointer' }}>
-//           🛒 My E-Commerce
-//         </Typography>
-//       </Toolbar>
-//     </AppBar>
-//   );
-// };
-
-// export default Header;
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import Badge from '@mui/material/Badge';
 import IconButton from '@mui/material/IconButton';

@@ -1,58 +1,44 @@
 
-import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { 
-  Box,
-  Button, 
-  CircularProgress, 
-  Snackbar, 
-  Alert,
-  Typography,
-  Container,
-  Paper
-} from '@mui/material';
-import { useDispatch } from 'react-redux';
-import { addToCart } from '../redux/cartSlice';
+import { Box,Button,CircularProgress,Snackbar,Alert,Typography,Container,Paper} from '@mui/material';
 import { blue } from '@mui/material/colors';
-
+import { useParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { useGetProductByIdQuery } from '../redux/apiSlice';
+import { addToCart } from '../redux/cartSlice';
+import { useState, useEffect } from 'react';
 
 const ProductPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data: product, isLoading, isError } = useGetProductByIdQuery(id);
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  useEffect(() => {
-    axios
-      .get(`https://fakestoreapi.com/products/${id}`)
-      .then((res) => setProduct(res.data))
-      .catch(() => setProduct(null))
-      .finally(() => setLoading(false));
-  }, [id]);
-
   const handleAddToCart = () => {
-    dispatch(addToCart(product));
-    setOpenSnackbar(true);
+    if (product) {
+      dispatch(addToCart(product));
+      setOpenSnackbar(true);
+    }
   };
 
-  const handleCloseSnackbar = (_, reason) => {
-    if (reason === 'clickaway') return;
-    setOpenSnackbar(false);
-  };
+  useEffect(() => {
+    if (isError) setOpenSnackbar(true);
+  }, [isError]);
 
-  if (loading) return (
-    <Box display="flex" justifyContent="center" mt={4}>
-      <CircularProgress />
-    </Box>
-  );
+  if (isLoading) {
+    return (
+      <Box textAlign="center" mt={4}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  if (!product) return (
-    <Typography variant="h6" align="center" mt={4}>
-      Product not found.
-    </Typography>
-  );
+  if (!product || isError) {
+    return (
+      <Typography variant="h6" align="center" mt={4}>
+        Product not found.
+      </Typography>
+    );
+  }
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -60,62 +46,39 @@ const ProductPage = () => {
         <Typography variant="h4" gutterBottom>
           {product.title}
         </Typography>
-        
-        <Box 
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            gap: 4,
-            mb: 4
-          }}
-        >
-          <Box 
-            sx={{
-              flex: 1,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              bgcolor: 'background.paper',
-              p: 2,
-              borderRadius: 1,
-              border: '1px solid',
-              borderColor: 'divider',
-              minHeight: 400
-            }}
+
+        <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={4} mb={4}>
+          <Paper
+            variant="outlined"
+            sx={{flex: 1,p: 2,minHeight: 400,display:'flex',justifyContent:'center',alignItems:'center'}}
           >
             <Box
               component="img"
               src={product.image}
               alt={product.title}
-              sx={{
-                maxWidth: '100%',
-                maxHeight: '100%',
-                objectFit: 'contain',
-                mixBlendMode: 'multiply'
-              }}
+              sx={{maxWidth: '100%',maxHeight: '100%',objectFit: 'contain', mixBlendMode: 'multiply' }}
               onError={(e) => {
-                e.target.src = '/placeholder-product.png';
-                e.target.style.objectFit = 'contain';
+                e.currentTarget.src = '/placeholder-product.png';
+                e.currentTarget.style.objectFit = 'contain';
               }}
             />
-          </Box>
+          </Paper>
 
-          <Box sx={{ flex: 1 }}>
+          <Box flex={1}>
             <Typography variant="h5" color="primary" gutterBottom>
               ${product.price}
             </Typography>
-            
-            <Typography variant="body1" paragraph sx={{ mb: 3 }}>
+
+            <Typography variant="body1" paragraph>
               {product.description}
             </Typography>
 
-            <Button 
-              variant="contained" 
-              size="large" 
+            <Button
+              variant="contained"
+              size="large"
               fullWidth
-            
               onClick={handleAddToCart}
-              sx={{ py: 1.5 ,  bgcolor: blue[700]}}
+              sx={{ py: 1.5, bgcolor: blue[700],'&:hover': { bgcolor: blue[800] } }}
             >
               Add to Cart
             </Button>
@@ -123,19 +86,19 @@ const ProductPage = () => {
         </Box>
       </Paper>
 
-      <Snackbar 
-        open={openSnackbar} 
-        autoHideDuration={3000} 
-        onClose={handleCloseSnackbar}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleCloseSnackbar} 
-          severity="success" 
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity={isError ? 'error' : 'success'}
           variant="filled"
           sx={{ width: '100%' }}
         >
-          Product added to cart successfully!
+          {isError ? 'Failed to load product.' : 'Product added to cart!'}
         </Alert>
       </Snackbar>
     </Container>
